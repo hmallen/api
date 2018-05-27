@@ -1,5 +1,10 @@
 # Coinigy API
 
+Fork of Coinigy API examples. The goal is for pure Python functionality.
+
+--------
+
+
 Here you will find issue tracking, docs, and code examples for all Coinigy developer APIs
 
 
