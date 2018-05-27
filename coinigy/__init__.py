@@ -1,1 +1,1 @@
-from .coinigyrest import CoinigyREST
+from .coinigy import CoinigyREST
