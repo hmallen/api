@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: coinigy
-Version: 0.1a0.dev0
+Version: 0.1a0.dev1
 Summary: Python bindings for Coinigy API functions.                   Not much more than the original examples with                   a cleaned-up working directory and packaged                   as installer with setuptools.
 Home-page: https://github.com/hmallen/coinigy
 Author: Hunter M. Allen
@@ -39,6 +39,4 @@ Description: # Coinigy API
 Keywords: coinigy
 Platform: UNKNOWN
 Classifier: Programming Language :: Python :: 3
-Classifier: License :: OSI Approved :: MIT License
-Classifier: Operating System :: OS Independent
 Description-Content-Type: text/markdown

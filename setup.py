@@ -5,15 +5,14 @@ with open('README.md', 'r') as fh:
 
 setup(
     name='coinigy',
-    version='0.1a.dev',
+    version='0.1a.dev1',
     author='Hunter M. Allen',
     author_email='allenhm@gmail.com',
     license='MIT',
     packages=['coinigy'],
     install_requires=['numpy>=1.14.3',
                       'pandas>=0.23.0',
-                      'peakutils>=1.1.1',
-                      'plotly>=2.6.0'],
+                      'requests>=2.18.4'],
     description=('Python bindings for Coinigy API functions. \
                   Not much more than the original examples with \
                   a cleaned-up working directory and packaged \
@@ -24,7 +23,5 @@ setup(
     keywords=['coinigy'],
     classifiers=(
         'Programming Language :: Python :: 3',
-        'License :: OSI Approved :: MIT License',
-        'Operating System :: OS Independent',
     ),
 )
