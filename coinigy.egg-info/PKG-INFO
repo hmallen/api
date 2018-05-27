@@ -1,0 +1,42 @@
+Metadata-Version: 2.1
+Name: coinigy
+Version: 0.1a0.dev2
+Summary: Python bindings for Coinigy API functions.                   Not much more than the original examples with                   a cleaned-up working directory and packaged                   as installer with setuptools.
+Home-page: https://github.com/hmallen/coinigy
+Author: Hunter M. Allen
+Author-email: allenhm@gmail.com
+License: TheUnlicence
+Description: # Coinigy API
+        
+        Fork of Coinigy API examples. Python bindings for Coinigy API functions. Not much more than the original examples with a cleaned-up working directory and packaged as installer with setuptools.
+        
+        --------
+        
+        
+        Here you will find issue tracking, docs, and code examples for all Coinigy developer APIs
+        
+        
+        
+        REST HTTP API docs located here: http://docs.coinigy.apiary.io/#reference
+        
+        WEBSOCKET API docs located here: Coming soon!
+        
+        WEBSOCKET SERVER INFO:
+        
+        HOST: sc-02.coinigy.com*
+        
+        PORT: 443
+        
+        SECURE: true
+        
+        
+        WEBSOCKET CLIENTS:
+        
+        https://github.com/SocketCluster/client-drivers
+        
+        *If your client requires the full wss url for websockets, use: wss://sc-02.coinigy.com/socketcluster/
+        
+Keywords: coinigy
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Description-Content-Type: text/markdown
