@@ -1,6 +1,6 @@
 # Coinigy API
 
-Fork of Coinigy API examples. The goal is for pure Python functionality.
+Fork of Coinigy API examples. Python bindings for Coinigy API functions. Not much more than the original examples with a cleaned-up working directory and packaged as installer with setuptools.
 
 --------
 
