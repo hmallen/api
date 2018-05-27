@@ -5,10 +5,10 @@ with open('README.md', 'r') as fh:
 
 setup(
     name='coinigy',
-    version='0.1a.dev1',
+    version='0.1a.dev2',
     author='Hunter M. Allen',
     author_email='allenhm@gmail.com',
-    license='MIT',
+    license='TheUnlicence',
     packages=['coinigy'],
     install_requires=['numpy>=1.14.3',
                       'pandas>=0.23.0',
