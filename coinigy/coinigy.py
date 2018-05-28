@@ -6,9 +6,9 @@ import pandas as pd
 from pprint import pprint
 import requests
 
-logging.basicConfig()
+#logging.basicConfig()
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+#logger.setLevel(logging.DEBUG)
 
 credentials = namedtuple('credentials', ('api', 'secret', 'endpoint'))
 connection = namedtuple('connection', ('hostname', 'port', 'secure'))
@@ -178,13 +178,15 @@ class CoinigyREST:
         :return:        a view of the acccount balances as of the date provided
         '''
         bh = pd.DataFrame.from_records(self.request('balanceHistory', date=date, json=True)['data']['balance_history'])
+
         if bh.empty:
             return bh
+
         acct = self.accounts()[['auth_id', 'exch_name']]
+
         return pd.merge(bh, acct, on='auth_id', how='left')
 
 
-    """
     def add_alert(self, exchange, market, price, note):
         return self.request('addAlert',
                             exch_code=exchange,
@@ -197,6 +199,7 @@ class CoinigyREST:
         return self.request('deleteAlert', alert_id=alert_id, json=True)['notifications']
 
 
+    """
     def open_orders(self):
         '''
             FIXME: untested
@@ -236,7 +239,7 @@ if __name__ == "__main__":
 
     config = configparser.ConfigParser()
     config.read(config_path)
-
+    
     credentials.api = config['coinigy']['api']
     credentials.secret = config['coinigy']['secret']
     credentials.endpoint = config['coinigy']['url']
