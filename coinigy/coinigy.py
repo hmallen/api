@@ -10,8 +10,6 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-config_path = '../../config/config.ini'
-
 credentials = namedtuple('credentials', ('api', 'secret', 'endpoint'))
 connection = namedtuple('connection', ('hostname', 'port', 'secure'))
 alerts = namedtuple('alerts', ('open_alerts', 'alert_history'))
@@ -136,42 +134,57 @@ class CoinigyREST:
         return alerts(open_alerts=open_alerts, alert_history=alert_history)
 
 
-    """
-    def accounts(self):
-        return self.request('accounts')
+    def favorites(self, json=True):
+        return self.request('userWatchList', json=json)
 
-    def activity(self):
-        return self.request('activity')
 
-    def balances(self):
-        return self.request('balances')
+    def accounts(self, json=True):
+        return self.request('accounts', json=json)
 
-    def open_orders(self):
-        '''
-            FIXME: untested
-        '''
-        return self.request('orders', json=True)
 
-    def history(self, exchange, market):
-        return self.data(exchange=exchange, market=market, data_type='history')['history']
+    def activity(self, json=True):
+        return self.request('activity', json=json)
 
-    def asks(self, exchange, market):
-        return self.data(exchange=exchange, market=market, data_type='asks')['asks']
 
-    def bids(self, exchange, market):
-        return self.data(exchange=exchange, market=market, data_type='bids')['bids']
+    def balances(self, json=True):
+        return self.request('balances', json=json)
 
-    def orders(self, exchange, market):
-        return self.data(exchange=exchange, market=market, data_type='orders')
-
-    def order_types(self):
-        dat = self.request('orderTypes', json=True)['data']
-        return dict(order_types=pd.DataFrame.from_records(dat['order_types']),
-                    price_types=pd.DataFrame.from_records(dat['price_types']))
 
     def refresh_balance(self):
         return self.request('refreshBalance', json=True)
 
+
+    def history(self, exchange, market, json=True):
+        return self.data(exchange=exchange, market=market, data_type='history', json=json)['history']
+
+
+    def asks(self, exchange, market, json=True):
+        return self.data(exchange=exchange, market=market, data_type='asks', json=json)['asks']
+
+
+    def bids(self, exchange, market, json=True):
+        return self.data(exchange=exchange, market=market, data_type='bids', json=json)['bids']
+
+
+    def orders(self, exchange, market, json=True):
+        return self.data(exchange=exchange, market=market, data_type='orders', json=json)
+
+
+    def balance_history(self, date):
+        '''
+        NB: the timestamp columns is the time when the account was last snapshot, not the time the balances were
+            effectively refreshed
+        :param date:    date str in format YYYY-MM-DD
+        :return:        a view of the acccount balances as of the date provided
+        '''
+        bh = pd.DataFrame.from_records(self.request('balanceHistory', date=date, json=True)['data']['balance_history'])
+        if bh.empty:
+            return bh
+        acct = self.accounts()[['auth_id', 'exch_name']]
+        return pd.merge(bh, acct, on='auth_id', how='left')
+
+
+    """
     def add_alert(self, exchange, market, price, note):
         return self.request('addAlert',
                             exch_code=exchange,
@@ -182,6 +195,20 @@ class CoinigyREST:
 
     def delete_alert(self, alert_id):
         return self.request('deleteAlert', alert_id=alert_id, json=True)['notifications']
+
+
+    def open_orders(self):
+        '''
+            FIXME: untested
+        '''
+        return self.request('orders', json=True)
+
+
+    def order_types(self):
+        dat = self.request('orderTypes', json=True)['data']
+        return dict(order_types=pd.DataFrame.from_records(dat['order_types']),
+                    price_types=pd.DataFrame.from_records(dat['price_types']))
+
 
     def add_order(self, auth_id, exch_id, mkt_id, order_type_id, price_type_id, limit_price, stop_price, order_quantity):
         '''
@@ -198,39 +225,30 @@ class CoinigyREST:
                             order_quantity=order_quantity,
                             json=True)
 
+
     def cancel_order(self, order_id):
         return self.request('cancelOrder', internal_order_id=order_id, json=True)
-
-    def balance_history(self, date):
-        '''
-        NB: the timestamp columns is the time when the account was last snapshot, not the time the balances were
-            effectively refreshed
-        :param date:    date str in format YYYY-MM-DD
-        :return:        a view of the acccount balances as of the date provided
-        '''
-        bh = pd.DataFrame.from_records(self.request('balanceHistory', date=date, json=True)['data']['balance_history'])
-        if bh.empty:
-            return bh
-        acct = self.accounts()[['auth_id', 'exch_name']]
-        return pd.merge(bh, acct, on='auth_id', how='left')
     """
 
 
 if __name__ == "__main__":
+    config_path = '../../TeslaBot/config/config.ini'
+
     config = configparser.ConfigParser()
     config.read(config_path)
 
     credentials.api = config['coinigy']['api']
-
     credentials.secret = config['coinigy']['secret']
-
     credentials.endpoint = config['coinigy']['url']
 
     cr = CoinigyREST(credentials)
 
-    #pprint(cr.exchanges())
+    favorites = cr.favorites()
+
+    print('Favorites:')
+    pprint(favorites)
 
     gdax_markets = cr.markets('GDAX')
 
+    print('GDAX Markets:')
     pprint(gdax_markets)
-    print(type(gdax_markets))
