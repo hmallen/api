@@ -122,11 +122,11 @@ class CoinigyREST:
 
 
     def exchanges(self, json_output=True):
-        return self.request('exchanges', json_output=json)
+        return self.request('exchanges', json_output=json_output)
 
 
     def markets(self, exchange, json_output=True):
-        return self.request('markets', exchange_code=exchange, json_output=json)
+        return self.request('markets', exchange_code=exchange, json_output=json_output)
 
 
     def news_feed(self):
@@ -154,19 +154,19 @@ class CoinigyREST:
 
 
     def favorites(self, json_output=True):
-        return self.request('userWatchList', json_output=json)
+        return self.request('userWatchList', json_output=json_output)
 
 
     def accounts(self, json_output=True):
-        return self.request('accounts', json_output=json)
+        return self.request('accounts', json_output=json_output)
 
 
     def activity(self, json_output=True):
-        return self.request('activity', json_output=json)
+        return self.request('activity', json_output=json_output)
 
 
     def balances(self, json_output=True):
-        return self.request('balances', json_output=json)
+        return self.request('balances', json_output=json_output)
 
 
     def refresh_balance(self):
@@ -174,19 +174,19 @@ class CoinigyREST:
 
 
     def history(self, exchange, market, json_output=True):
-        return self.data(exchange=exchange, market=market, data_type='history', json_output=json)['history']
+        return self.data(exchange=exchange, market=market, data_type='history', json_output=json_output)['history']
 
 
     def asks(self, exchange, market, json_output=True):
-        return self.data(exchange=exchange, market=market, data_type='asks', json_output=json)['asks']
+        return self.data(exchange=exchange, market=market, data_type='asks', json_output=json_output)['asks']
 
 
     def bids(self, exchange, market, json_output=True):
-        return self.data(exchange=exchange, market=market, data_type='bids', json_output=json)['bids']
+        return self.data(exchange=exchange, market=market, data_type='bids', json_output=json_output)['bids']
 
 
     def orders(self, exchange, market, json_output=True):
-        return self.data(exchange=exchange, market=market, data_type='orders', json_output=json)
+        return self.data(exchange=exchange, market=market, data_type='orders', json_output=json_output)
 
 
     def balance_history(self, date):
