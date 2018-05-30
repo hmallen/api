@@ -55,7 +55,7 @@ class CoinigyREST:
 
                 return
 
-            if json:
+            if json_output:
                 return r.json()
 
             return pd.DataFrame(r.json()['data'])
