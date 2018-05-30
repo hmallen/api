@@ -47,17 +47,30 @@ class CoinigyREST:
         if query is not None:
             payload.update(query)
 
-        r = requests.post(url, data=payload, headers=authAPI)
+        try:
+            r = requests.post(url, data=payload, headers=authAPI)
 
-        if 'error' in r.json().keys():
-            print(r.json()['error'])
+            if 'error' in r.json().keys():
+                print(r.json()['error'])
 
-            return
+                return
 
-        if json:
-            return r.json()
+            if json:
+                return r.json()
 
-        return pd.DataFrame(r.json()['data'])
+            return pd.DataFrame(r.json()['data'])
+
+        except json.JSONDecodeError as e:
+            logger.error('json.decoder.JSONDecodeError while requesting data.')
+            logger.error(e)
+
+            return -1
+
+        except Exception as e:
+            logger.exception('Exception while requesting data.')
+            logger.exception(e)
+
+            return -2
 
 
     def data(self, exchange, market, data_type):
@@ -239,7 +252,7 @@ if __name__ == "__main__":
 
     config = configparser.ConfigParser()
     config.read(config_path)
-    
+
     credentials.api = config['coinigy']['api']
     credentials.secret = config['coinigy']['secret']
     credentials.endpoint = config['coinigy']['url']
