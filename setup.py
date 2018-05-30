@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setup(
     name='coinigy',
-    version='0.1a.dev5',
+    version='0.1a.dev6',
     author='Hunter M. Allen',
     author_email='allenhm@gmail.com',
     license='TheUnlicence',

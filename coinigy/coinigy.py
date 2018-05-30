@@ -17,7 +17,7 @@ alerts = namedtuple('alerts', ('open_alerts', 'alert_history'))
 
 class CoinigyREST:
     """
-        This class implements coinigy's REST api as documented in the documentation
+        This class implements Coinigy's REST API as documented in the documentation
         available at
         https://github.com/coinigy/api
     """
@@ -27,9 +27,9 @@ class CoinigyREST:
         self.endpoint = acct.endpoint
 
 
-    def request(self, method, query=None, json=False, **args):
+    def request(self, method, query=None, json_output=False, **args):
         """
-        Generic interface to REST api
+        Generic interface to REST API
         :param method:  query name
         :param query:   dictionary of inputs
         :param json:    if True return the raw results in json format
@@ -60,17 +60,23 @@ class CoinigyREST:
 
             return pd.DataFrame(r.json()['data'])
 
-        except json.JSONDecodeError as e:
+        except json.decoder.JSONDecodeError as e:
             logger.error('json.decoder.JSONDecodeError while requesting data.')
             logger.error(e)
 
             return -1
 
+        except json.JSONDecodeError as e:
+            logger.error('json.JSONDecodeError while requesting data.')
+            logger.error(e)
+
+            return -2
+
         except Exception as e:
             logger.exception('Exception while requesting data.')
             logger.exception(e)
 
-            return -2
+            return -3
 
 
     def data(self, exchange, market, data_type):
@@ -81,7 +87,7 @@ class CoinigyREST:
         :param data_type: currently supported are 'history', 'bids', 'asks', 'orders'
         :return:
         """
-        d = self.request('data', exchange_code=exchange, exchange_market=market, type=data_type, json=True)['data']
+        d = self.request('data', exchange_code=exchange, exchange_market=market, type=data_type, json_output=True)['data']
 
         res = dict()
 
@@ -115,12 +121,12 @@ class CoinigyREST:
         return res
 
 
-    def exchanges(self, json=True):
-        return self.request('exchanges', json=json)
+    def exchanges(self, json_output=True):
+        return self.request('exchanges', json_output=json)
 
 
-    def markets(self, exchange, json=True):
-        return self.request('markets', exchange_code=exchange, json=json)
+    def markets(self, exchange, json_output=True):
+        return self.request('markets', exchange_code=exchange, json_output=json)
 
 
     def news_feed(self):
@@ -138,7 +144,7 @@ class CoinigyREST:
 
 
     def alerts(self):
-        all_alerts = self.request('alerts', json=True)['data']
+        all_alerts = self.request('alerts', json_output=True)['data']
 
         open_alerts = pd.DataFrame(all_alerts['open_alerts'])
 
@@ -147,40 +153,40 @@ class CoinigyREST:
         return alerts(open_alerts=open_alerts, alert_history=alert_history)
 
 
-    def favorites(self, json=True):
-        return self.request('userWatchList', json=json)
+    def favorites(self, json_output=True):
+        return self.request('userWatchList', json_output=json)
 
 
-    def accounts(self, json=True):
-        return self.request('accounts', json=json)
+    def accounts(self, json_output=True):
+        return self.request('accounts', json_output=json)
 
 
-    def activity(self, json=True):
-        return self.request('activity', json=json)
+    def activity(self, json_output=True):
+        return self.request('activity', json_output=json)
 
 
-    def balances(self, json=True):
-        return self.request('balances', json=json)
+    def balances(self, json_output=True):
+        return self.request('balances', json_output=json)
 
 
     def refresh_balance(self):
-        return self.request('refreshBalance', json=True)
+        return self.request('refreshBalance', json_output=True)
 
 
-    def history(self, exchange, market, json=True):
-        return self.data(exchange=exchange, market=market, data_type='history', json=json)['history']
+    def history(self, exchange, market, json_output=True):
+        return self.data(exchange=exchange, market=market, data_type='history', json_output=json)['history']
 
 
-    def asks(self, exchange, market, json=True):
-        return self.data(exchange=exchange, market=market, data_type='asks', json=json)['asks']
+    def asks(self, exchange, market, json_output=True):
+        return self.data(exchange=exchange, market=market, data_type='asks', json_output=json)['asks']
 
 
-    def bids(self, exchange, market, json=True):
-        return self.data(exchange=exchange, market=market, data_type='bids', json=json)['bids']
+    def bids(self, exchange, market, json_output=True):
+        return self.data(exchange=exchange, market=market, data_type='bids', json_output=json)['bids']
 
 
-    def orders(self, exchange, market, json=True):
-        return self.data(exchange=exchange, market=market, data_type='orders', json=json)
+    def orders(self, exchange, market, json_output=True):
+        return self.data(exchange=exchange, market=market, data_type='orders', json_output=json)
 
 
     def balance_history(self, date):
@@ -190,7 +196,7 @@ class CoinigyREST:
         :param date:    date str in format YYYY-MM-DD
         :return:        a view of the acccount balances as of the date provided
         '''
-        bh = pd.DataFrame.from_records(self.request('balanceHistory', date=date, json=True)['data']['balance_history'])
+        bh = pd.DataFrame.from_records(self.request('balanceHistory', date=date, json_output=True)['data']['balance_history'])
 
         if bh.empty:
             return bh
@@ -206,10 +212,10 @@ class CoinigyREST:
                             market_name=market,
                             alert_price=price,
                             alert_note=note,
-                            json=True)['notifications']
+                            json_output=True)['notifications']
 
     def delete_alert(self, alert_id):
-        return self.request('deleteAlert', alert_id=alert_id, json=True)['notifications']
+        return self.request('deleteAlert', alert_id=alert_id, json_output=True)['notifications']
 
 
     """
@@ -217,11 +223,11 @@ class CoinigyREST:
         '''
             FIXME: untested
         '''
-        return self.request('orders', json=True)
+        return self.request('orders', json_output=True)
 
 
     def order_types(self):
-        dat = self.request('orderTypes', json=True)['data']
+        dat = self.request('orderTypes', json_output=True)['data']
         return dict(order_types=pd.DataFrame.from_records(dat['order_types']),
                     price_types=pd.DataFrame.from_records(dat['price_types']))
 
@@ -239,11 +245,11 @@ class CoinigyREST:
                             limit_price=limit_price,
                             stop_price=stop_price,
                             order_quantity=order_quantity,
-                            json=True)
+                            json_output=True)
 
 
     def cancel_order(self, order_id):
-        return self.request('cancelOrder', internal_order_id=order_id, json=True)
+        return self.request('cancelOrder', internal_order_id=order_id, json_output=True)
     """
 
 
