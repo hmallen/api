@@ -60,23 +60,24 @@ class CoinigyREST:
 
             return pd.DataFrame(r.json()['data'])
 
-        except json.decoder.JSONDecodeError as e:
-            logger.error('json.decoder.JSONDecodeError while requesting data.')
-            logger.error(e)
+        #except json.decoder.JSONDecodeError as e:
+            #logger.error('json.decoder.JSONDecodeError while requesting data.')
+            #logger.error(e)
 
-            return -1
+            #return -1
 
-        except json.JSONDecodeError as e:
-            logger.error('json.JSONDecodeError while requesting data.')
-            logger.error(e)
+        #except json.JSONDecodeError as e:
+            #logger.error('json.JSONDecodeError while requesting data.')
+            #logger.error(e)
 
-            return -2
+            #return -2
 
         except Exception as e:
             logger.exception('Exception while requesting data.')
             logger.exception(e)
 
-            return -3
+            #return -3
+            return -1
 
 
     def data(self, exchange, market, data_type):

@@ -1,1 +1,0 @@
-from .coinigy import CoinigyREST
