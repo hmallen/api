@@ -1,10 +1,19 @@
-import configparser
 from collections import namedtuple
+import configparser
+import datetime
 import logging
+from pprint import pprint
+import sys
+import time
+
+import hmac
+import hashlib
+
+import dateparser
 import numpy as np
 import pandas as pd
-from pprint import pprint
 import requests
+from requests.auth import AuthBase
 
 #logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -15,7 +24,130 @@ connection = namedtuple('connection', ('hostname', 'port', 'secure'))
 alerts = namedtuple('alerts', ('open_alerts', 'alert_history'))
 
 
-class CoinigyREST:
+class CoinigyAuth(AuthBase):
+
+    def __init__(self, api, secret):
+        self.coinigy_api = api
+        self.coinigy_secret = secret
+
+
+    def __call__(self, request):
+        x_api_timestamp = str(int(time.time()))
+        logger.debug('x_api_timestamp: ' + x_api_timestamp)
+
+        method = request.method
+        logger.debug('method: ' + method)
+
+        resource_path = request.path_url
+        if '?' in resource_path:
+            resource_path = resource_path.split('?')[0]
+        logger.debug('resource_path: ' + resource_path)
+
+        body = (request.body or '')
+        logger.debug('body: ' + body)
+
+        message = self.coinigy_api + x_api_timestamp + method + resource_path + body
+        logger.debug('message: ' + message)
+
+        signature_hex = hmac.new(self.coinigy_secret.encode('ascii'), message.encode('ascii'), digestmod=hashlib.sha256).hexdigest()#.digest()
+        #signature_hex = map("{:02X}".format, signature_bytes)
+        x_api_sign = ''.join(signature_hex)
+
+        request.headers.update({
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-API-SIGN': x_api_sign,
+            'X-API-TIMESTAMP': x_api_timestamp,
+            'X-API-KEY': self.coinigy_api
+        })
+
+        return request
+
+
+class CoinigyV2:
+
+    def __init__(self, api, secret):
+        self.coinigy_api = api
+        self.coinigy_secret = secret
+
+        self.coinigy_auth = CoinigyAuth(api, secret)
+
+        self.url_base = 'https://api.coinigy.com/api/v2'
+
+
+    def request(self, method, resource, params={}, data={}):
+        url_request = self.url_base + resource
+        logger.debug('url_request: ' + url_request)
+
+        if method.upper() == 'GET':
+            r = requests.get(url_request, auth=self.coinigy_auth, params=params, data=data)
+        elif method.upper() == 'POST':
+            r = requests.post(url_request, auth=self.coinigy_auth, params=params, data=data)
+
+        logger.debug('r.status_code: ' + str(r.status_code))
+        logger.debug('r.reason: ' + str(r.reason))
+
+        if r.status_code == 200:
+            json_data = r.json()
+
+            if json_data['success'] == True:
+                return_data = json_data['result']
+            else:
+                return_data = json_data['error']
+                logger.error('Error returned from API request.')
+        else:
+            logger.error('HTTP error code returned from API request.')
+            return_data = None
+
+        return return_data
+
+
+    def exchanges(self):
+        return self.request(method='GET', resource='/private/exchanges')
+
+
+    def candles(self, exchange, base_currency, quote_currency, interval, start=None, end=None, start_str=None, limit=None):
+        """
+        exchange: ex. GDAX
+        base_currency: ex. LTC
+        quote_currency: ex. BTC
+        interval: ex. 60 (integer value representing minutes)
+        start: ex. 2018-07-31T22:59:59Z (ISO UTC Datetime)
+        end: ex. 2018-07-31T22:59:59Z (ISO UTC Datetime)
+        start_str: ex. 48 hours ago UTC
+        limit: ex. 48 (Limit return data to X most recent candles)
+        """
+        resource = '/private/exchanges/' + exchange + '/markets/' + base_currency + '/' + quote_currency + '/ohlc/' + interval
+        logger.debug('resource: ' + resource)
+
+        if start_str != None:
+            start = dateparser.parse(start_str).isoformat(timespec='seconds').split('+')[0] + 'Z'
+
+        if end == None:
+            end = datetime.datetime.utcnow().isoformat(timespec='seconds').split('+')[0] + 'Z'
+
+        logger.debug('exchange: ' + exchange)
+        logger.debug('base_currency: ' + base_currency)
+        logger.debug('quote_currency: ' + quote_currency)
+        logger.debug('interval: ' + interval)
+        logger.debug('start: ' + start)
+        logger.debug('end: ' + end)
+
+        params = {
+            'StartDate': start,
+            'EndDate': end
+        }
+        logger.debug('params: ' + str(params))
+
+        return_data = self.request(method='GET', resource=resource, params=params)
+
+        if limit != None and len(return_data) > limit:
+            return_data = return_data[(-1 * limit):]
+
+        return return_data
+
+
+class Coinigy:
     """
         This class implements Coinigy's REST API as documented in the documentation
         available at
@@ -254,17 +386,31 @@ class CoinigyREST:
     """
 
 
-if __name__ == "__main__":
-    config_path = '../../TeslaBot/config/config.ini'
+if __name__ == '__main__':
+    config_path = '../../cryptocoinalerts/config/config.ini'
 
     config = configparser.ConfigParser()
     config.read(config_path)
 
+    # Coinigy API v2
+    coinigy_api = config['coinigy']['api']
+    coinigy_secret = config['coinigy']['secret']
+
+    coinigy_client = CoinigyV2(coinigy_api, coinigy_secret)
+
+    candles = coinigy_client.candles(exchange='GDAX', base_currency='LTC', quote_currency='BTC', interval='60', start_str='48 hours ago UTC', limit=48)#, end=end_time)
+
+    print('Candles:')
+    pprint(candles)
+    print(len(candles))
+
+    """
+    # Coinigy API v1
     credentials.api = config['coinigy']['api']
     credentials.secret = config['coinigy']['secret']
     credentials.endpoint = config['coinigy']['url']
 
-    cr = CoinigyREST(credentials)
+    cr = Coinigy(credentials)
 
     favorites = cr.favorites()
 
@@ -274,4 +420,5 @@ if __name__ == "__main__":
     gdax_markets = cr.markets('GDAX')
 
     print('GDAX Markets:')
-    pprint(gdax_markets)
+    pprint(gdax_markets)\
+    """

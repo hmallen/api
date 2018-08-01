@@ -1,9 +1,0 @@
-README.md
-setup.py
-coinigy/__init__.py
-coinigy/coinigy.py
-coinigy.egg-info/PKG-INFO
-coinigy.egg-info/SOURCES.txt
-coinigy.egg-info/dependency_links.txt
-coinigy.egg-info/requires.txt
-coinigy.egg-info/top_level.txt
